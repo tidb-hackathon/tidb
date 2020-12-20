@@ -28,7 +28,7 @@ require (
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pingcap/br v0.0.0-20200921112226-ee2e962f5e4b
 	github.com/pingcap/check v0.0.0-20200212061837-5e12011dc712
-	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
+	github.com/pingcap/errors v0.11.5-0.20201029093017-5a7df2af2ac7
 	github.com/pingcap/failpoint v0.0.0-20200702092429-9f69995143ce
 	github.com/pingcap/fn v0.0.0-20200306044125-d5540d389059
 	github.com/pingcap/goleveldb v0.0.0-20191226122134-f82aafb29989
@@ -70,3 +70,6 @@ require (
 )
 
 go 1.13
+
+replace github.com/pingcap/parser => github.com/tidb-hackathon/parser v0.0.0-20201220152337-4f5ee2684eff
+replace github.com/pingcap/errors => github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d

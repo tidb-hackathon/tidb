@@ -1922,6 +1922,10 @@ func handleTableOptions(options []*ast.TableOption, tbInfo *model.TableInfo) err
 			tbInfo.PreSplitRegions = op.UintValue
 		case ast.TableOptionCharset, ast.TableOptionCollate:
 			// We don't handle charset and collate here since they're handled in `getCharsetAndCollateInTableOption`.
+		case ast.TableOptionTTL:
+			tbInfo.TTL = time.Duration(uint64(time.Millisecond) * op.UintValue)
+		case ast.TableOptionTTLGranularity:
+			tbInfo.TTLByRow = op.StrValue == "ROW"
 		}
 	}
 	if tbInfo.PreSplitRegions > tbInfo.ShardRowIDBits {

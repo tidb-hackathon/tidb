@@ -935,6 +935,15 @@ func ConstructResultOfShowCreateTable(ctx sessionctx.Context, tableInfo *model.T
 	if len(tableInfo.Comment) > 0 {
 		fmt.Fprintf(buf, " COMMENT='%s'", format.OutputFormat(tableInfo.Comment))
 	}
+
+	if tableInfo.TTL != 0 {
+		if tableInfo.TTLByRow {
+			fmt.Fprintf(buf, " TTL=%d TTL_GRANULARITY='ROW'", tableInfo.TTL.Milliseconds())
+		} else {
+			fmt.Fprintf(buf, " TTL=%d TTL_GRANULARITY='PARITION'", tableInfo.TTL.Milliseconds())
+		}
+	}
+
 	// add partition info here.
 	appendPartitionInfo(tableInfo.Partition, buf)
 	return nil
