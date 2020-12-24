@@ -1923,7 +1923,7 @@ func handleTableOptions(options []*ast.TableOption, tbInfo *model.TableInfo) err
 		case ast.TableOptionCharset, ast.TableOptionCollate:
 			// We don't handle charset and collate here since they're handled in `getCharsetAndCollateInTableOption`.
 		case ast.TableOptionTTL:
-			tbInfo.TTL = time.Duration(uint64(time.Millisecond) * op.UintValue)
+			tbInfo.TTL = time.Duration(uint64(time.Minute) * op.UintValue)
 		case ast.TableOptionTTLGranularity:
 			tbInfo.TTLByRow = op.StrValue == "ROW"
 		}

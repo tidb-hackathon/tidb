@@ -35,7 +35,7 @@ require (
 	github.com/pingcap/kvproto v0.0.0-20200907074027-32a3a0accf7d
 	github.com/pingcap/log v0.0.0-20200828042413-fce0951f1463
 	github.com/pingcap/parser v0.0.0-20201104074312-b05b93d3a011
-	github.com/pingcap/sysutil v0.0.0-20200715082929-4c47bcac246a
+	github.com/pingcap/sysutil v0.0.0-20201021075216-f93ced2829e2
 	github.com/pingcap/tidb-tools v4.0.6-0.20200828085514-03575b185007+incompatible
 	github.com/pingcap/tipb v0.0.0-20200618092958-4fad48b4c8c3
 	github.com/prometheus/client_golang v1.5.1
@@ -71,5 +71,10 @@ require (
 
 go 1.13
 
+replace github.com/tikv/pd => github.com/tidb-hackathon/pd v0.0.0-20201224013254-87d5770aa970
+
 replace github.com/pingcap/parser => github.com/tidb-hackathon/parser v0.0.0-20201220152337-4f5ee2684eff
+
 replace github.com/pingcap/errors => github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
+
+replace github.com/pingcap/kvproto => github.com/tidb-hackathon/kvproto v0.0.0-20201223082359-0ffb775a24af

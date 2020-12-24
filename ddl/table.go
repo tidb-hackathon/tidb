@@ -14,6 +14,7 @@
 package ddl
 
 import (
+	"context"
 	"fmt"
 	"sync/atomic"
 	"time"
@@ -29,10 +30,12 @@ import (
 	"github.com/pingcap/tidb/kv"
 	"github.com/pingcap/tidb/meta"
 	"github.com/pingcap/tidb/meta/autoid"
+	"github.com/pingcap/tidb/store/tikv"
 	"github.com/pingcap/tidb/table"
 	"github.com/pingcap/tidb/table/tables"
 	"github.com/pingcap/tidb/tablecodec"
 	"github.com/pingcap/tidb/util/gcutil"
+	pd_client "github.com/tikv/pd/client"
 )
 
 const tiflashCheckTiDBHTTPAPIHalfInterval = 2500 * time.Millisecond
@@ -64,6 +67,19 @@ func onCreateTable(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, _ error)
 	ver, err = updateSchemaVersion(t, job)
 	if err != nil {
 		return ver, errors.Trace(err)
+	}
+
+	if tbInfo.TTL > 0 {
+		if tbInfo.TTLByRow {
+			pdCli := d.store.(tikv.Storage).GetRegionCache().PDClient()
+			if err := pdCli.AddRangeTTL(context.Background(), &pd_client.RangeTTL{
+				StartKey: tablecodec.EncodeTablePrefix(tbInfo.ID),
+				EndKey:   tablecodec.EncodeTablePrefix(tbInfo.ID + 1),
+				TTL:      tbInfo.TTL,
+			}); err != nil {
+				return ver, errors.Trace(err)
+			}
+		}
 	}
 
 	switch tbInfo.State {

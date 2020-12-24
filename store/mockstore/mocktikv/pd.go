@@ -184,3 +184,19 @@ func (c *pdClient) GetMemberInfo(ctx context.Context) ([]*pdpb.Member, error) {
 }
 
 func (c *pdClient) GetLeaderAddr() string { return "mockpd" }
+
+func (c *pdClient) AddRangeTTL(ctx context.Context, ttl ...*pd.RangeTTL) error {
+	return nil
+}
+
+func (c *pdClient) DeleteRangeTTL(ctx context.Context, startKey, endKey []byte) error {
+	return nil
+}
+
+func (c *pdClient) GetRangeTTL(ctx context.Context, startKey, endKey []byte) (*pd.RangeTTL, error) {
+	return nil, nil
+}
+
+func (c *pdClient) GetAllRangeTTL(ctx context.Context) ([]*pd.RangeTTL, error) {
+	return nil, nil
+}
