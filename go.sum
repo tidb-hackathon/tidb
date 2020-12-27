@@ -841,6 +841,8 @@ github.com/tiancaiamao/appdash v0.0.0-20181126055449-889f96f722a2 h1:mbAskLJ0oJf
 github.com/tiancaiamao/appdash v0.0.0-20181126055449-889f96f722a2/go.mod h1:2PfKggNGDuadAa0LElHrByyrz4JPZ9fFx6Gs7nx7ZZU=
 github.com/tidb-hackathon/kvproto v0.0.0-20201223082359-0ffb775a24af h1:/tSUm3H0Kg4py4GeXDcsC1vX2XM5d9C7+3GPTpdK/D4=
 github.com/tidb-hackathon/kvproto v0.0.0-20201223082359-0ffb775a24af/go.mod h1:IOdRDPLyda8GX2hE/jO7gqaCV/PNFh8BZQCQZXfIOqI=
+github.com/tidb-hackathon/kvproto v0.0.0-20201225024502-27ac70970595 h1:cQ6ABJaYqi8a5wYW4w6Evx/OdzEn+/9625jopBFrv2g=
+github.com/tidb-hackathon/kvproto v0.0.0-20201225024502-27ac70970595/go.mod h1:IOdRDPLyda8GX2hE/jO7gqaCV/PNFh8BZQCQZXfIOqI=
 github.com/tidb-hackathon/parser v0.0.0-20201220120637-d06192f47ae4 h1:XYobug2W7WdtgDZz5dkUH14cjlikJD6AKdpX18rVEaA=
 github.com/tidb-hackathon/parser v0.0.0-20201220120637-d06192f47ae4/go.mod h1:GbEr2PgY72/4XqPZzmzstlOU/+il/wrjeTNFs6ihsSE=
 github.com/tidb-hackathon/parser v0.0.0-20201220124605-30e2493f68e2 h1:U4yjb3XSRfHW90b97OFESgB9EDjEAUSx04BRIhnNppA=
@@ -849,6 +851,8 @@ github.com/tidb-hackathon/parser v0.0.0-20201220152337-4f5ee2684eff h1:93kczkIEZ
 github.com/tidb-hackathon/parser v0.0.0-20201220152337-4f5ee2684eff/go.mod h1:dMMvhqeowLnAsDWspyalgxXoRUnP09cZ7wAnpt2e/S8=
 github.com/tidb-hackathon/pd v0.0.0-20201224013254-87d5770aa970 h1:EJOdNiqXCRC68Vev5tPBQo3G4tUXNMx2TpED43B+H88=
 github.com/tidb-hackathon/pd v0.0.0-20201224013254-87d5770aa970/go.mod h1:1kUw86M/wNJYbibNeFs3Po19ftBq2t1k4mAvxg4Wshk=
+github.com/tidb-hackathon/pd v0.0.0-20201226144007-61e35dcc47af h1:o/GJupVk3i3kYLGD5zAzpOGIX69e/+RMv/h7CyhRe3E=
+github.com/tidb-hackathon/pd v0.0.0-20201226144007-61e35dcc47af/go.mod h1:ms1KfLTarRshWp+ZAOGRt2xA0oxbHJK8D+HxBcIuv5o=
 github.com/tidwall/gjson v1.3.5/go.mod h1:P256ACg0Mn+j1RXIDXoss50DeIABTYK1PULOJHhxOls=
 github.com/tidwall/match v1.0.1/go.mod h1:LujAq0jyVjBy028G1WhWfIzbpQfMO8bBZ6Tyb0+pL9E=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=

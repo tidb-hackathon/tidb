@@ -71,10 +71,10 @@ require (
 
 go 1.13
 
-replace github.com/tikv/pd => github.com/tidb-hackathon/pd v0.0.0-20201224013254-87d5770aa970
+replace github.com/tikv/pd => github.com/tidb-hackathon/pd v0.0.0-20201226144007-61e35dcc47af
 
 replace github.com/pingcap/parser => github.com/tidb-hackathon/parser v0.0.0-20201220152337-4f5ee2684eff
 
 replace github.com/pingcap/errors => github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 
-replace github.com/pingcap/kvproto => github.com/tidb-hackathon/kvproto v0.0.0-20201223082359-0ffb775a24af
+replace github.com/pingcap/kvproto => github.com/tidb-hackathon/kvproto v0.0.0-20201225024502-27ac70970595
