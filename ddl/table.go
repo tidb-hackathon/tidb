@@ -191,7 +191,7 @@ func onCreateView(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, _ error) 
 	}
 }
 
-func onDropTableOrView(t *meta.Meta, job *model.Job) (ver int64, _ error) {
+func onDropTableOrView(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, _ error) {
 	tblInfo, err := checkTableExistAndCancelNonExistJob(t, job, job.SchemaID)
 	if err != nil {
 		return ver, errors.Trace(err)
@@ -230,6 +230,22 @@ func onDropTableOrView(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 				break
 			}
 		}
+		if tblInfo.TTL > 0 {
+			if tblInfo.TTLByRow {
+				pdCli := d.store.(tikv.Storage).GetRegionCache().PDClient()
+				tblID := tblInfo.ID
+				indexPrefix := tablecodec.GenTableIndexPrefix(tblID)
+				recordPrefix := tablecodec.GenTableRecordPrefix(tblID)
+				tableEnd := tablecodec.EncodeTablePrefix(tblID + 1)
+				if err = pdCli.DeleteRangeTTL(context.Background(), indexPrefix, recordPrefix); err != nil {
+					return ver, errors.Trace(err)
+				}
+				if err = pdCli.DeleteRangeTTL(context.Background(), recordPrefix, tableEnd); err != nil {
+					return ver, errors.Trace(err)
+				}
+			}
+		}
+
 		// Finish this job.
 		job.FinishTableJob(model.JobStateDone, model.StateNone, ver, tblInfo)
 		startKey := tablecodec.EncodeTablePrefix(job.TableID)
