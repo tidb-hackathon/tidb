@@ -938,9 +938,9 @@ func ConstructResultOfShowCreateTable(ctx sessionctx.Context, tableInfo *model.T
 
 	if tableInfo.TTL != 0 {
 		if tableInfo.TTLByRow {
-			fmt.Fprintf(buf, " TTL=%d TTL_GRANULARITY='ROW'", tableInfo.TTL.Minutes())
+			fmt.Fprintf(buf, " TTL=%s TTL_GRANULARITY='ROW'", tableInfo.TTL.String())
 		} else {
-			fmt.Fprintf(buf, " TTL=%d TTL_GRANULARITY='PARITION'", tableInfo.TTL.Minutes())
+			fmt.Fprintf(buf, " TTL=%s TTL_GRANULARITY='PARITION'", tableInfo.TTL.String())
 		}
 	}
 
@@ -1076,7 +1076,7 @@ func fetchShowCreateTable4View(ctx sessionctx.Context, tb *model.TableInfo, buf 
 }
 
 func appendPartitionInfo(partitionInfo *model.PartitionInfo, buf *bytes.Buffer) {
-	if partitionInfo == nil {
+	if partitionInfo == nil || partitionInfo.Type == model.PartitionTypeTTL {
 		return
 	}
 	if partitionInfo.Type == model.PartitionTypeHash {

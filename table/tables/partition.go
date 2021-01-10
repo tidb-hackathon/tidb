@@ -113,6 +113,8 @@ func newPartitionExpr(tblInfo *model.TableInfo) (*PartitionExpr, error) {
 		return generateRangePartitionExpr(ctx, pi, columns, names)
 	case model.PartitionTypeHash:
 		return generateHashPartitionExpr(ctx, pi, columns, names)
+	case model.PartitionTypeTTL:
+		return &PartitionExpr{}, nil
 	}
 	panic("cannot reach here")
 }

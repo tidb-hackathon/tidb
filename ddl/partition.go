@@ -882,11 +882,6 @@ func onDropTablePartition(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 // onDropTablePartition truncates old partition meta.
 func onTruncateTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (int64, error) {
 	var ver int64
-	var oldIDs []int64
-	if err := job.DecodeArgs(&oldIDs); err != nil {
-		job.State = model.JobStateCancelled
-		return ver, errors.Trace(err)
-	}
 	tblInfo, err := getTableInfoAndCancelFaultJob(t, job, job.SchemaID)
 	if err != nil {
 		return ver, errors.Trace(err)
@@ -896,19 +891,34 @@ func onTruncateTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (int64, e
 		return ver, errors.Trace(ErrPartitionMgmtOnNonpartitioned)
 	}
 
-	newPartitions := make([]model.PartitionDefinition, 0, len(oldIDs))
-	for _, oldID := range oldIDs {
-		for i := 0; i < len(pi.Definitions); i++ {
-			def := &pi.Definitions[i]
-			if def.ID == oldID {
-				pid, err1 := t.GenGlobalID()
-				if err != nil {
-					return ver, errors.Trace(err1)
+	var newPartitions []model.PartitionDefinition
+	var oldIDs []int64
+	if isTTLPartition(pi) {
+		if pid, err1 := t.GenGlobalID(); err1 != nil {
+			return ver, errors.Trace(err1)
+		} else {
+			newPartitions, oldIDs = truncateTTLPartitions(pid, pi)
+		}
+	} else {
+		if err := job.DecodeArgs(&oldIDs); err != nil {
+			job.State = model.JobStateCancelled
+			return ver, errors.Trace(err)
+		}
+
+		newPartitions = make([]model.PartitionDefinition, 0, len(oldIDs))
+		for _, oldID := range oldIDs {
+			for i := 0; i < len(pi.Definitions); i++ {
+				def := &pi.Definitions[i]
+				if def.ID == oldID {
+					pid, err1 := t.GenGlobalID()
+					if err1 != nil {
+						return ver, errors.Trace(err1)
+					}
+					def.ID = pid
+					// Shallow copy only use the def.ID in event handle.
+					newPartitions = append(newPartitions, *def)
+					break
 				}
-				def.ID = pid
-				// Shallow copy only use the def.ID in event handle.
-				newPartitions = append(newPartitions, *def)
-				break
 			}
 		}
 	}

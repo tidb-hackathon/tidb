@@ -164,6 +164,7 @@ func (s *partitionProcessor) prune(ds *DataSource) (LogicalPlan, error) {
 		return s.pruneRangePartition(ds, pi)
 	}
 
+	// TTL by partition search from all partitions all the time
 	// We haven't implement partition by list and so on.
 	return s.makeUnionAllChildren(ds, pi, fullRange(len(pi.Definitions)))
 }

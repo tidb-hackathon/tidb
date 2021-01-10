@@ -1420,6 +1420,12 @@ func buildTableInfoWithStmt(ctx sessionctx.Context, s *ast.CreateTableStmt, dbCh
 		return nil, errors.Trace(err)
 	}
 
+	if tbInfo.TTL != 0 {
+		if err = rewriteTTLTableInfo(tbInfo); err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
+
 	return tbInfo, nil
 }
 
@@ -1923,7 +1929,11 @@ func handleTableOptions(options []*ast.TableOption, tbInfo *model.TableInfo) err
 		case ast.TableOptionCharset, ast.TableOptionCollate:
 			// We don't handle charset and collate here since they're handled in `getCharsetAndCollateInTableOption`.
 		case ast.TableOptionTTL:
-			tbInfo.TTL = time.Duration(uint64(time.Minute) * op.UintValue)
+			if ttl, err := time.ParseDuration(op.StrValue); err != nil {
+				return err
+			} else {
+				tbInfo.TTL = ttl
+			}
 		case ast.TableOptionTTLGranularity:
 			tbInfo.TTLByRow = op.StrValue == "ROW"
 		}
@@ -2553,8 +2563,13 @@ func (d *ddl) TruncateTablePartition(ctx sessionctx.Context, ident ast.Ident, sp
 		return errors.Trace(ErrPartitionMgmtOnNonpartitioned)
 	}
 
+	partitionName := spec.PartitionNames[0].L
+	if err = checkAlterOnTTLPartition(meta, partitionName); err != nil {
+		return errors.Trace(err)
+	}
+
 	var pid int64
-	pid, err = tables.FindPartitionByName(meta, spec.PartitionNames[0].L)
+	pid, err = tables.FindPartitionByName(meta, partitionName)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -4698,6 +4713,30 @@ func (d *ddl) DropSequence(ctx sessionctx.Context, ti ast.Ident, ifExists bool) 
 		TableID:    tbl.Meta().ID,
 		SchemaName: schema.Name.L,
 		Type:       model.ActionDropSequence,
+		BinlogInfo: &model.HistoryInfo{},
+	}
+
+	err = d.doDDLJob(ctx, job)
+	err = d.callHookOnChanged(err)
+	return errors.Trace(err)
+}
+
+func (d *ddl) rolloverTTLPartition(ctx sessionctx.Context, ti ast.Ident) error {
+	schema, tbl, err := d.getSchemaAndTableByIdent(ctx, ti)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	meta := tbl.Meta()
+	if !isTTLPartitionTable(meta) {
+		return errors.Trace(ErrPartitionMgmtOnNonpartitioned)
+	}
+
+	job := &model.Job{
+		SchemaID:   schema.ID,
+		TableID:    meta.ID,
+		SchemaName: schema.Name.L,
+		Type:       model.ActionTruncateTablePartition,
 		BinlogInfo: &model.HistoryInfo{},
 	}
 
