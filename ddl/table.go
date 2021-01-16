@@ -73,6 +73,8 @@ func onCreateTable(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, _ error)
 		if tbInfo.TTLByRow {
 			if err := updateTableTTLByRow(d, tbInfo.Name.L, tbInfo.ID, tbInfo.TTL); err != nil {
 				return ver, errors.Trace(err)
+			} else {
+				tbInfo.NextTTLTruncateTime = nextTTLTruncateTime(d.store, tbInfo.TTL)
 			}
 		}
 	}

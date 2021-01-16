@@ -898,6 +898,7 @@ func onTruncateTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (int64, e
 			return ver, errors.Trace(err1)
 		} else {
 			newPartitions, oldIDs = truncateTTLPartitions(pid, pi)
+			tblInfo.NextTTLTruncateTime = nextTTLTruncateTime(d.store, tblInfo.TTL)
 		}
 	} else {
 		if err := job.DecodeArgs(&oldIDs); err != nil {

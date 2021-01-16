@@ -4763,7 +4763,7 @@ func (d *ddl) DropSequence(ctx sessionctx.Context, ti ast.Ident, ifExists bool) 
 	return errors.Trace(err)
 }
 
-func (d *ddl) rolloverTTLPartition(ctx sessionctx.Context, ti ast.Ident) error {
+func (d *ddl) RolloverTTLPartition(ctx sessionctx.Context, ti ast.Ident) error {
 	schema, tbl, err := d.getSchemaAndTableByIdent(ctx, ti)
 	if err != nil {
 		return errors.Trace(err)

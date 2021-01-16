@@ -111,6 +111,7 @@ type DDL interface {
 	RepairTable(ctx sessionctx.Context, table *ast.TableName, createStmt *ast.CreateTableStmt) error
 	CreateSequence(ctx sessionctx.Context, stmt *ast.CreateSequenceStmt) error
 	DropSequence(ctx sessionctx.Context, tableIdent ast.Ident, ifExists bool) (err error)
+	RolloverTTLPartition(ctx sessionctx.Context, tableIdent ast.Ident) (err error)
 
 	// CreateSchemaWithInfo creates a database (schema) given its database info.
 	//

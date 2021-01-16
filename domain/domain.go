@@ -78,6 +78,9 @@ type Domain struct {
 	wg                   sync.WaitGroup
 	statsUpdating        sync2.AtomicInt32
 	cancel               context.CancelFunc
+
+	notifyTTLLoop chan struct{}
+	isOwner       sync2.AtomicInt32
 }
 
 // loadInfoSchema loads infoschema at startTS into handle, usedSchemaVersion is the currently used
@@ -310,6 +313,54 @@ func (do *Domain) GetSnapshotMeta(startTS uint64) (*meta.Meta, error) {
 		return nil, err
 	}
 	return meta.NewSnapshotMeta(snapshot), nil
+}
+
+func (do *Domain) rolloverTTLTables(now time.Time) []ast.Ident {
+	schemas := do.InfoSchema().AllSchemas()
+	candidates := make([]ast.Ident, 0)
+	for _, schema := range schemas {
+		for _, table := range schema.Tables {
+			if table.TTL != 0 && !table.TTLByRow && table.NextTTLTruncateTime.Before(now) {
+				candidates = append(candidates, ast.Ident{
+					Schema: schema.Name,
+					Name:   table.Name,
+				})
+			}
+		}
+	}
+	return candidates
+}
+
+func (do *Domain) ttlRolloverLoop() {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+	sysSessionPool := do.SysSessionPool()
+	for {
+		select {
+		case <-do.notifyTTLLoop:
+		case <-ticker.C:
+		}
+		if do.isOwner.Get() == 0 {
+			return
+		}
+		physicalTime := ddl.GetCurrentPhysicalTime(do.store)
+		candidates := do.rolloverTTLTables(physicalTime)
+		ctx, err := sysSessionPool.Get()
+		if err != nil {
+			logutil.BgLogger().Warn("Could not get system session", zap.Error(err))
+			continue
+		}
+		sessctx := ctx.(sessionctx.Context)
+		for _, candidate := range candidates {
+			if do.isOwner.Get() == 0 {
+				sysSessionPool.Put(ctx.(pools.Resource))
+				return
+			}
+			sessctx.SetValue(sessionctx.QueryString, fmt.Sprintf("ROLLOVER TTL PARTITION TABLE %s", candidate))
+			do.ddl.RolloverTTLPartition(sessctx, candidate)
+		}
+		sysSessionPool.Put(ctx.(pools.Resource))
+	}
 }
 
 // DDL gets DDL from domain.
@@ -641,9 +692,11 @@ func (c *ddlCallback) OnChanged(err error) error {
 }
 
 func (c *ddlCallback) OnWatched(ctx context.Context) {
+	c.do.onWatched(ctx)
 }
 
 func (c *ddlCallback) OnRetired(ctx context.Context) {
+	c.do.onRetired(ctx)
 }
 
 const resourceIdleTimeout = 3 * time.Minute // resources in the ResourcePool will be recycled after idleTimeout
@@ -658,6 +711,7 @@ func NewDomain(store kv.Storage, ddlLease time.Duration, statsLease time.Duratio
 		statsLease:     statsLease,
 		infoHandle:     infoschema.NewHandle(store),
 		slowQuery:      newTopNSlowQueries(30, time.Hour*24*7, 500),
+		notifyTTLLoop:  make(chan struct{}),
 	}
 
 	do.SchemaValidator = NewSchemaValidator(ddlLease, do)
@@ -1215,6 +1269,16 @@ func (do *Domain) NotifyUpdatePrivilege(ctx sessionctx.Context) {
 	if err != nil {
 		logutil.BgLogger().Error("unable to update privileges", zap.Error(err))
 	}
+}
+
+func (do *Domain) onWatched(ctx context.Context) {
+	do.isOwner.Set(1)
+	go do.ttlRolloverLoop()
+}
+
+func (do *Domain) onRetired(ctx context.Context) {
+	do.isOwner.Set(0)
+	do.notifyTTLLoop <- struct{}{}
 }
 
 var (

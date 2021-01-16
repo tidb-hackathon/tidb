@@ -239,6 +239,9 @@ func (b *Builder) applyCreateTable(m *meta.Meta, dbInfo *model.DBInfo, tableID i
 			fmt.Sprintf("(Table ID %d)", tableID),
 		)
 	}
+	if tblInfo.TTL != 0 && tblInfo.TTLByRow {
+
+	}
 	affected = appendAffectedIDs(affected, tblInfo)
 
 	// Failpoint check whether tableInfo should be added to repairInfo.

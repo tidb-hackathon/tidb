@@ -1,11 +1,17 @@
 package ddl
 
 import (
+	"context"
+	"encoding/json"
+	"time"
+
 	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/charset"
 	"github.com/pingcap/parser/model"
 	"github.com/pingcap/parser/mysql"
 	"github.com/pingcap/parser/types"
+	"github.com/pingcap/tidb/kv"
+	"github.com/pingcap/tidb/store/tikv/oracle"
 	"github.com/pingcap/tidb/table"
 )
 
@@ -96,4 +102,23 @@ func truncateTTLPartitions(pid int64, pi *model.PartitionInfo) ([]model.Partitio
 	newPartitions[ttlCurrentPartitionIndex] = pi.Definitions[ttlCurrentPartitionIndex]
 	newPartitions[ttlRetentionPartitionIndex] = pi.Definitions[ttlRetentionPartitionIndex]
 	return newPartitions, oldIDs
+}
+
+func GetCurrentPhysicalTime(storage kv.Storage) time.Time {
+	// we know that low resoultion tso will never fail
+	ts, _ := storage.GetOracle().GetLowResolutionTimestamp(context.TODO())
+	return oracle.GetTimeFromTS(ts)
+}
+
+func nextTTLTruncateTime(storage kv.Storage, ttl time.Duration) time.Time {
+	return GetCurrentPhysicalTime(storage).Add(ttl)
+}
+
+func ToJsonPretty(a interface{}) string {
+	b, e := json.MarshalIndent(a, "", "  ")
+	if e != nil {
+		return e.Error()
+	} else {
+		return string(b)
+	}
 }

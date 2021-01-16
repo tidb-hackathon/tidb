@@ -855,6 +855,10 @@ github.com/tidb-hackathon/parser v0.0.0-20210109140620-92c808b99aba h1:kFNOuRNby
 github.com/tidb-hackathon/parser v0.0.0-20210109140620-92c808b99aba/go.mod h1:dMMvhqeowLnAsDWspyalgxXoRUnP09cZ7wAnpt2e/S8=
 github.com/tidb-hackathon/parser v0.0.0-20210116025212-a245d4d2ca21 h1:XDi0lRCJRtMvF7MwpLEvbLM/a1jszsUY5AYejBS3Wdc=
 github.com/tidb-hackathon/parser v0.0.0-20210116025212-a245d4d2ca21/go.mod h1:dMMvhqeowLnAsDWspyalgxXoRUnP09cZ7wAnpt2e/S8=
+github.com/tidb-hackathon/parser v0.0.0-20210116060213-875021d8eb03 h1:8ZK8i1OgtJH1hEgB+aPXbb/xo6Kq9q7Cnf8Zoy7Bs1A=
+github.com/tidb-hackathon/parser v0.0.0-20210116060213-875021d8eb03/go.mod h1:dMMvhqeowLnAsDWspyalgxXoRUnP09cZ7wAnpt2e/S8=
+github.com/tidb-hackathon/parser v0.0.0-20210116063200-4c2347d3e083 h1:WWsQWltnftOy7hNdCC3luFUGADsAH2EsurOGntL43so=
+github.com/tidb-hackathon/parser v0.0.0-20210116063200-4c2347d3e083/go.mod h1:dMMvhqeowLnAsDWspyalgxXoRUnP09cZ7wAnpt2e/S8=
 github.com/tidb-hackathon/pd v0.0.0-20201224013254-87d5770aa970 h1:EJOdNiqXCRC68Vev5tPBQo3G4tUXNMx2TpED43B+H88=
 github.com/tidb-hackathon/pd v0.0.0-20201224013254-87d5770aa970/go.mod h1:1kUw86M/wNJYbibNeFs3Po19ftBq2t1k4mAvxg4Wshk=
 github.com/tidb-hackathon/pd v0.0.0-20201226144007-61e35dcc47af h1:o/GJupVk3i3kYLGD5zAzpOGIX69e/+RMv/h7CyhRe3E=
