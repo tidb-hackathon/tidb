@@ -2188,6 +2188,16 @@ func (d *ddl) AlterTable(ctx sessionctx.Context, ident ast.Ident, specs []*ast.A
 					needsOverwriteCols := needToOverwriteColCharset(spec.Options)
 					err = d.AlterTableCharsetAndCollate(ctx, ident, toCharset, toCollate, needsOverwriteCols)
 					handledCharsetOrCollate = true
+				case ast.TableOptionTTLGranularity:
+					if opt.StrValue != "ROW" {
+						return errors.New("Only TTL_GRANULARITY='row' is supported")
+					}
+				case ast.TableOptionTTL:
+					if ttl, err := time.ParseDuration(opt.StrValue); err != nil {
+						return err
+					} else {
+						err = d.AlterTableTTL(ctx, ident, ttl)
+					}
 				}
 
 				if err != nil {
@@ -3432,6 +3442,38 @@ func (d *ddl) AlterTableCharsetAndCollate(ctx sessionctx.Context, ident ast.Iden
 		Type:       model.ActionModifyTableCharsetAndCollate,
 		BinlogInfo: &model.HistoryInfo{},
 		Args:       []interface{}{toCharset, toCollate, needsOverwriteCols},
+	}
+	err = d.doDDLJob(ctx, job)
+	err = d.callHookOnChanged(err)
+	return errors.Trace(err)
+}
+
+// AlterTableTTL changes table ttl setup.
+func (d *ddl) AlterTableTTL(ctx sessionctx.Context, ident ast.Ident, ttl time.Duration) error {
+	is := d.infoHandle.Get()
+	schema, ok := is.SchemaByName(ident.Schema)
+	if !ok {
+		return infoschema.ErrDatabaseNotExists.GenWithStackByArgs(ident.Schema)
+	}
+
+	tb, err := is.TableByName(ident.Schema, ident.Name)
+	if err != nil {
+		return errors.Trace(infoschema.ErrTableNotExists.GenWithStackByArgs(ident.Schema, ident.Name))
+	}
+
+	tbInfo := tb.Meta()
+	if tbInfo.TTL == ttl {
+		// nothing to do
+		return nil
+	}
+
+	job := &model.Job{
+		SchemaID:   schema.ID,
+		TableID:    tb.Meta().ID,
+		SchemaName: schema.Name.L,
+		Type:       model.ActionModifyTableTTL,
+		BinlogInfo: &model.HistoryInfo{},
+		Args:       []interface{}{ttl, true}, // pass in TTLByRow so we can eventually support it
 	}
 	err = d.doDDLJob(ctx, job)
 	err = d.callHookOnChanged(err)

@@ -938,9 +938,9 @@ func ConstructResultOfShowCreateTable(ctx sessionctx.Context, tableInfo *model.T
 
 	if tableInfo.TTL != 0 {
 		if tableInfo.TTLByRow {
-			fmt.Fprintf(buf, " TTL=%s TTL_GRANULARITY='ROW'", tableInfo.TTL.String())
+			fmt.Fprintf(buf, " TTL='%s' TTL_GRANULARITY='ROW'", tableInfo.TTL.String())
 		} else {
-			fmt.Fprintf(buf, " TTL=%s TTL_GRANULARITY='PARITION'", tableInfo.TTL.String())
+			fmt.Fprintf(buf, " TTL='%s' TTL_GRANULARITY='PARITION'", tableInfo.TTL.String())
 		}
 	}
 

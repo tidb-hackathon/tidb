@@ -73,7 +73,7 @@ go 1.13
 
 replace github.com/tikv/pd => github.com/tidb-hackathon/pd v0.0.0-20201226144007-61e35dcc47af
 
-replace github.com/pingcap/parser => github.com/tidb-hackathon/parser v0.0.0-20210109140620-92c808b99aba
+replace github.com/pingcap/parser => github.com/tidb-hackathon/parser v0.0.0-20210116025212-a245d4d2ca21
 
 replace github.com/pingcap/errors => github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 

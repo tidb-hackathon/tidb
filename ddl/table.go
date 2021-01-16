@@ -1066,3 +1066,53 @@ func onRepairTable(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, _ error)
 		return ver, ErrInvalidDDLState.GenWithStackByArgs("table", tblInfo.State)
 	}
 }
+
+func updateTableTTLByRow(d *ddlCtx, tblName string, tblID int64, ttl time.Duration) error {
+	pdCli := d.store.(tikv.Storage).GetRegionCache().PDClient()
+	indexPrefix := tablecodec.GenTableIndexPrefix(tblID)
+	recordPrefix := tablecodec.GenTableRecordPrefix(tblID)
+	tableEnd := tablecodec.EncodeTablePrefix(tblID + 1)
+	indexRange := &pd_client.RangeTTL{
+		StartKey: indexPrefix,
+		EndKey:   recordPrefix,
+		TTL:      ttl,
+		UserData: []byte(fmt.Sprintf("ttl for table '%s' index", tblName)),
+	}
+	recordRange := &pd_client.RangeTTL{
+		StartKey:      recordPrefix,
+		EndKey:        tableEnd,
+		TTL:           ttl,
+		AddGCInterval: true,
+		UserData:      []byte(fmt.Sprintf("ttl for table '%s' record", tblName)),
+	}
+	if err := pdCli.AddRangeTTL(context.Background(), indexRange, recordRange); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
+}
+
+func onModifyTableTTL(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, _ error) {
+	var ttl time.Duration
+	var ttlByRow bool
+	if err := job.DecodeArgs(&ttl, &ttlByRow); err != nil {
+		job.State = model.JobStateCancelled
+		return ver, errors.Trace(err)
+	}
+
+	tblInfo, err := getTableInfoAndCancelFaultJob(t, job, job.SchemaID)
+	if err != nil {
+		return ver, errors.Trace(err)
+	}
+
+	if err = updateTableTTLByRow(d, tblInfo.Name.L, tblInfo.ID, ttl); err != nil {
+		return ver, errors.Trace(err)
+	}
+	tblInfo.TTL = ttl
+	tblInfo.TTLByRow = ttlByRow
+	ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+	if err != nil {
+		return ver, errors.Trace(err)
+	}
+	job.FinishTableJob(model.JobStateDone, model.StatePublic, ver, tblInfo)
+	return ver, nil
+}
