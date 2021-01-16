@@ -45,6 +45,8 @@ type Callback interface {
 	OnJobUpdated(job *model.Job)
 	// OnWatched is called after watching owner is completed.
 	OnWatched(ctx context.Context)
+	// OnRetired is called after owner is retired
+	OnRetired(ctx context.Context)
 }
 
 // BaseCallback implements Callback.OnChanged interface.
@@ -68,5 +70,10 @@ func (c *BaseCallback) OnJobUpdated(job *model.Job) {
 
 // OnWatched implements Callback.OnWatched interface.
 func (c *BaseCallback) OnWatched(ctx context.Context) {
+	// Nothing to do.
+}
+
+// OnRetired implements Callback.OnRetired interface.
+func (c *BaseCallback) OnRetired(ctx context.Context) {
 	// Nothing to do.
 }

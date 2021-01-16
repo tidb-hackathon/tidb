@@ -71,25 +71,7 @@ func onCreateTable(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, _ error)
 
 	if tbInfo.TTL > 0 {
 		if tbInfo.TTLByRow {
-			pdCli := d.store.(tikv.Storage).GetRegionCache().PDClient()
-			tblID := tbInfo.ID
-			indexPrefix := tablecodec.GenTableIndexPrefix(tblID)
-			recordPrefix := tablecodec.GenTableRecordPrefix(tblID)
-			tableEnd := tablecodec.EncodeTablePrefix(tblID + 1)
-			indexRange := &pd_client.RangeTTL{
-				StartKey: indexPrefix,
-				EndKey:   recordPrefix,
-				TTL:      tbInfo.TTL,
-				UserData: []byte(fmt.Sprintf("ttl for table '%s' index", tbInfo.Name.L)),
-			}
-			recordRange := &pd_client.RangeTTL{
-				StartKey:      recordPrefix,
-				EndKey:        tableEnd,
-				TTL:           tbInfo.TTL,
-				AddGCInterval: true,
-				UserData:      []byte(fmt.Sprintf("ttl for table '%s' record", tbInfo.Name.L)),
-			}
-			if err := pdCli.AddRangeTTL(context.Background(), indexRange, recordRange); err != nil {
+			if err := updateTableTTLByRow(d, tbInfo.Name.L, tbInfo.ID, tbInfo.TTL); err != nil {
 				return ver, errors.Trace(err)
 			}
 		}

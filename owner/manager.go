@@ -87,10 +87,20 @@ type ownerManager struct {
 	cancel    context.CancelFunc
 	elec      unsafe.Pointer
 	wg        sync.WaitGroup
+	watched   OwnershipCallback
+	retired   OwnershipCallback
 }
+
+type OwnershipCallback func(ctx context.Context)
 
 // NewOwnerManager creates a new Manager.
 func NewOwnerManager(ctx context.Context, etcdCli *clientv3.Client, prompt, id, key string) Manager {
+	dummyCallback := func(ctx context.Context) {}
+	return NewOwnerManagerWithCallback(ctx, etcdCli, prompt, id, key, dummyCallback, dummyCallback)
+}
+
+// NewOwnerManager creates a new Manager.
+func NewOwnerManagerWithCallback(ctx context.Context, etcdCli *clientv3.Client, prompt, id, key string, watched, retired OwnershipCallback) Manager {
 	logPrefix := fmt.Sprintf("[%s] %s ownerManager %s", prompt, key, id)
 	ctx, cancelFunc := context.WithCancel(ctx)
 	return &ownerManager{
@@ -102,6 +112,8 @@ func NewOwnerManager(ctx context.Context, etcdCli *clientv3.Client, prompt, id, 
 		cancel:    cancelFunc,
 		logPrefix: logPrefix,
 		logCtx:    logutil.WithKeyValue(context.Background(), "owner info", logPrefix),
+		watched:   watched,
+		retired:   retired,
 	}
 }
 
@@ -215,11 +227,13 @@ func (m *ownerManager) ResignOwner(ctx context.Context) error {
 
 func (m *ownerManager) toBeOwner(elec *concurrency.Election) {
 	atomic.StorePointer(&m.elec, unsafe.Pointer(elec))
+	m.watched(context.TODO())
 }
 
 // RetireOwner make the manager to be a not owner.
 func (m *ownerManager) RetireOwner() {
 	atomic.StorePointer(&m.elec, nil)
+	m.retired(context.TODO())
 }
 
 func (m *ownerManager) campaignLoop(etcdSession *concurrency.Session) {

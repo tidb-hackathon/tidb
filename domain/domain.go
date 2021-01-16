@@ -15,6 +15,7 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -637,6 +638,12 @@ func (c *ddlCallback) OnChanged(err error) error {
 	}
 
 	return nil
+}
+
+func (c *ddlCallback) OnWatched(ctx context.Context) {
+}
+
+func (c *ddlCallback) OnRetired(ctx context.Context) {
 }
 
 const resourceIdleTimeout = 3 * time.Minute // resources in the ResourcePool will be recycled after idleTimeout

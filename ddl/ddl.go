@@ -268,7 +268,7 @@ func newDDL(ctx context.Context, options ...Option) *ddl {
 		manager = owner.NewMockManager(ctx, id)
 		syncer = NewMockSchemaSyncer()
 	} else {
-		manager = owner.NewOwnerManager(ctx, etcdCli, ddlPrompt, id, DDLOwnerKey)
+		manager = owner.NewOwnerManagerWithCallback(ctx, etcdCli, ddlPrompt, id, DDLOwnerKey, opt.Hook.OnWatched, opt.Hook.OnRetired)
 		syncer = util.NewSchemaSyncer(etcdCli, id, manager)
 		deadLockCkr = util.NewDeadTableLockChecker(etcdCli)
 	}
@@ -292,6 +292,12 @@ func newDDL(ctx context.Context, options ...Option) *ddl {
 	}
 
 	return d
+}
+
+func (d *ddl) onWatched(ctx context.Context) {
+}
+
+func (d *ddl) onRetired(ctx context.Context) {
 }
 
 // Stop implements DDL.Stop interface.
